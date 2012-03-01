@@ -1,7 +1,0 @@
-;$Id$
-name = "Form Example"
-description= "This is my first module"
-core = 6.x
-php = 5.1
-version = 1.0
-package = Tekton Labs

@@ -1,5 +1,0 @@
-;$Id$
-name = "Menu Example"
-description= "This is my first module"
-core = 6.x
-php = 5.1
