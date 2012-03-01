@@ -1,0 +1,8 @@
+; $Id$
+name = "Send Data to Webservice"
+description = "This module send the data from a form to webservice"
+core = 6.x
+php = 5.1
+version = 1.0
+
+package = Tekton Labs

@@ -1,0 +1,200 @@
+<?php
+
+require_once 'baseDeDatos.php';
+
+/*
+ * Implementation of Hook_Menu
+ */
+
+function node_db_menu() {
+    $items['admin/settings/crear_nodos'] = array(
+        'title' => t('Creacion de los Nodos'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('node_db_formGeneral'),
+        'access callback' => TRUE,
+        'description' => t('Solo tienes que hacer click en el boton para crear los nodos con los datos de la DB Externa'),
+        'type' => MENU_CALLBACK | MENU_NORMAL_ITEM
+    );
+
+    return $items;
+}
+
+/*
+ * Page's Callback
+ */
+
+function node_db_formGeneral($form_state) {
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Crear todos los nodos'
+    );
+    
+    $form['info'] = array(
+        '#value' => 'Haz click en el botón para que se creen los nodos.',
+    );
+
+    return $form;
+}
+
+function node_db_formGeneral_submit($form, $form_state) {
+    createNodeFromTableHoteles();
+    createNodeFromTableReservas();
+}
+
+/*
+ * Implement Hook_Cron();
+ */
+
+function node_db_cron() {
+    $db = new BaseDeDatos();
+    $hoteles_resultado = $db->extractHoteles();
+    $reserva_resultado = $db->extractReservas();
+    
+    $nid_hoteles = getNidHoteles();
+    $nid_reservas = getNidReserva();
+    
+    foreach ($hoteles_resultado as $hotel) {
+        $nid = current($nid_hoteles);
+        
+        $target_path = "sites/default/files/";
+        
+        $node = node_load(array("nid" => $nid));
+        $file_path = $hotel['imagen'];
+        $node->title = $hotel['nombre'];
+        $node->body = $hotel['direccion'];
+        $node->field_numero[0]['value'] = $hotel['telefono'];
+        $node->field_imagen[0] = field_file_save_file($file_path, array(), $target_path);
+        $nodo = node_submit($node);
+        node_save($nodo);
+        
+        $nid = next($nid_hoteles);
+    }
+    
+    foreach ($reserva_resultado as $reserva) {
+        $nid = current($nid_reservas);
+        
+        $node = node_load(array("nid" => $nid));
+        
+        $query = "SELECT nid FROM node WHERE type = '%s' AND title = '%s'";
+        $type = "hoteles";
+        $title = $db->extractHotelFromReservas($reserva['cliente']);
+        $nid_ref = db_query($query,$type,$title);
+        
+        while($row = db_fetch_object($nid_ref)){
+            $reference = (int) ($row->nid);
+        }
+        
+        $node->title = $reserva['cliente'];
+        $node->field_numhotel[0]['nid'] = $reference;
+        $node->field_datestart[0]['value'] = $reserva['fecha_inicio'];
+        $node->field_datend[0]['value'] = $reserva['fecha_fin'];
+        $node->field_numreserv[0]['value'] = $reserva['reserva_id'];
+        $nodo = node_submit($node);
+        node_save($nodo);
+        
+        $nid = next($nid_reservas);
+    }
+    
+    drupal_flush_all_caches();
+}
+
+/*
+ * Implements Customs Functions
+ */
+
+function createNodeFromTableHoteles() {
+    global $user;
+    $db = new BaseDeDatos();
+    $hoteles_resultado = $db->extractHoteles();
+
+    foreach ($hoteles_resultado as $hoteles) {
+        $id = $hoteles['hotel_id'];
+        $node = new stdClass();
+        
+        $file_path = $hoteles['imagen'];
+        $target_path = "sites/default/files/";
+        $node->uid = $user->uid;
+        $node->type = 'hoteles';
+        $node->title = $hoteles['nombre'];
+        $node->body = $hoteles['direccion'];
+        $node->created = time();
+        $node->changed = $node->created;
+        $node->promote = 0;
+        $node->sticky = 0;
+        $node->format = 2;
+        $node->status = 1;
+        $node->language = 'es';
+        $node->field_id[0]['value'] = $id;
+        $node->field_numero[0]['value'] = $hoteles['telefono'];
+        $node->field_imagen[0] = field_file_save_file($file_path, array(), $target_path);
+        $node->field_link[0]['title'] = "Enviar datos para el registro";
+        $node->field_link[0]['url'] = "send_data?id=$id";
+        
+        $node = node_submit($node);
+        node_save($node);
+    }
+}
+
+function createNodeFromTableReservas(){
+    global $user;
+    $db = new BaseDeDatos();
+    $reservas_resultado = $db->extractReservas();
+
+    foreach ($reservas_resultado as $reservas) {
+        $node = new stdClass();
+        
+        $query = "SELECT nid FROM node WHERE type = '%s' AND title = '%s'";
+        $type = "hoteles";
+        $title = $db->extractHotelFromReservas($reservas['cliente']);
+        $nid_ref = db_query($query,$type,$title);
+        
+        while($row = db_fetch_object($nid_ref)){
+            $nid = (int)$row->nid;
+        }
+        
+        $node->uid = $user->uid;
+        $node->type = 'reservas';
+        $node->title = $reservas['cliente'];
+        $node->body = "Some text to edit";
+        $node->created = time();
+        $node->changed = $node->created;
+        $node->promote = 0;
+        $node->sticky = 0;
+        $node->format = 2;
+        $node->status = 1;
+        $node->language = 'es';
+        $node->field_numhotel[0]['nid'] = $nid;
+        $node->field_datestart[0]['value'] = $reservas['fecha_inicio'];
+        $node->field_datend[0]['value'] = $reservas['fecha_fin'];
+        $node->field_numreserv[0]['value'] = $reservas['reserva_id'];
+        
+        $node = node_submit($node);
+        node_save($node);
+    }
+}
+
+function getNidHoteles() {
+    $type = 'hoteles';
+    $query_hoteles = "SELECT nid FROM node WHERE type ='%s'";
+    $result_hoteles = db_query($query_hoteles, $type);
+    $nid_hoteles = array();
+
+    while ($row = db_fetch_object($result_hoteles)) {
+        $nid_hoteles[] = (int) ($row->nid);
+    }
+
+    return $nid_hoteles;
+}
+
+function getNidReserva() {
+    $type = 'reservas';
+    $query_reservas = "SELECT nid FROM node WHERE type ='%s' ORDER BY 1";
+    $result_reservas = db_query($query_reservas, $type);
+    $nid_reservas = array();
+
+    while ($row = db_fetch_object($result_reservas)) {
+        $nid_reservas[] = (int) ($row->nid);
+    }
+
+    return $nid_reservas;
+}

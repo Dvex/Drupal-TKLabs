@@ -1,0 +1,17 @@
+************************************
+| Documentación del modulo node_db |
+************************************
+
+-> Este módulo se encarga de sincronizar una DB externa (mysqli) con la DB de Drupal. (V 6.x)
+-> Usa un archivo .php para conectarse con la DB Externa.
+-> Sigue las convencionalidades de API Drupal.
+
+**************************************
+| Documentación del modulo send_data |
+**************************************
+
+-> Este módulo se encarga de enviar los datos desde un formulario drupal a un Webservice en REST.
+-> Cuenta con una autentificación HTTP Básica.
+-> Usa la libreria libcurl de PHP (cURL)
+
+| Versión 1 |

@@ -1,0 +1,28 @@
+<?php
+
+/* PRIMERA FORMA PARA CARGAR IMAGENES. (SUCCESSFULL)
+ * 
+ * $file = new stdClass();
+ * $filepath = $hoteles['imagen'];
+ * $file->filepath = "sites/default/files/imagenes/".$filepath;
+ * $node->field_imagen = array(drupal_add_existing_file($file->filepath, $user->uid));
+ * 
+function drupal_add_existing_file($file_drupal_path,$uid,$status=FILE_STATUS_PERMANENT) {
+  
+  $file=(object)array(
+    'filename' =>basename($file_drupal_path),
+    'filepath' =>$file_drupal_path,
+    'filemime' =>file_get_mimetype($file_drupal_path),
+    'filesize' =>filesize("/var/www/sitios-web/Syn_databases/".$file_drupal_path),
+    'uid'      =>$uid,
+    'status'   =>$status,
+    'timestamp'=>time()
+  );
+  
+  drupal_write_record('files',$file);
+ 
+  return field_file_load($file_drupal_path);
+}
+ */
+
+

@@ -1,0 +1,8 @@
+; $Id$
+name = "Add node from DB external"
+description = "This module is a extension of module node db. Convert a new rows from DB external to new nodes in your drupal site"
+core = 6.x
+php = 5.1
+version = 1.0
+
+package = Tekton Labs
