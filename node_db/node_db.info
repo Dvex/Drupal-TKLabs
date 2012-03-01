@@ -1,8 +1,0 @@
-; $Id$
-name = "DB rows to node"
-description = "This module transform from DB rows to NODE"
-core = 6.x
-php = 5.1
-version = 1.0
-
-package = Tekton Labs
