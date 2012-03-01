@@ -2,10 +2,10 @@
 
 Class BaseDeDatos{
     private $_connec;
-    const SERVER = "localhost"; 
-    const USER = "root";
-    const PASS = "root";
-    const DB = "syn_ordinary_db";
+    const SERVER = "server"; 
+    const USER = "user";
+    const PASS = "pass";
+    const DB = "data_base";
 
     function __construct() {
         try{
@@ -44,28 +44,24 @@ Class BaseDeDatos{
        }
    }
    
-   function wereUpdating($rows) {
-       return $rows;
-   }
-   
    function extractHoteles() {
-       $query = "SELECT * FROM Hoteles";
+       $query = "SELECT * FROM {external_table_1}";
        $resultados = $this->executeSQL($query, 1);
        return $resultados;
    }
    
    function extractReservas() {
-       $query = "SELECT * FROM Reservas";
+       $query = "SELECT * FROM {external_table_2}";
        $resultados = $this->executeSQL($query, 1);
        return $resultados;
    }
    
-   function extractHotelFromReservas($reserva) {
-       $query = "SELECT nombre FROM Hoteles h JOIN Reservas r ON h.hotel_id = r.hotel_id WHERE r.cliente = '$reserva'";
+   function extractHotelFromReservas($value) {
+       $query = "SELECT nombre FROM {external_table_1} h JOIN {external_table_2} r ON h.id = r.id WHERE r.{campo_tabla} = '$value'";
        $resultado = $this->executeSQL($query, 1);
        
        foreach ($resultado as $val) {
-           $nombre = $val['nombre'];
+           $nombre = $val['name'];
        }
        
        return $nombre;
