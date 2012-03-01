@@ -1,0 +1,7 @@
+$Id$
+name = "First Example"
+description = "Whatever you want"
+core = 6.x
+php = 5.1
+version = 1.0
+package = Tekton Labs

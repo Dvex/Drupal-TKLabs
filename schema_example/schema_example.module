@@ -1,0 +1,44 @@
+<?php
+/**
+ * @file
+ * My first module
+ * This module shows a welcome block 
+ */
+/* $op = "Son las operaciones que se hace en el bloque. Puede ser list, configure, save, view";
+ $delta = "";
+ $edit = "Es para la edicion del bloque en este ejemplo";
+ */
+/**
+ * Implementation of hook_block
+ */
+function first_example_block($op='list', $delta=0, $edit=array()) {
+    switch ($op){
+        case 'list':
+            $blocks[0]['info'] = t('First Block');
+            $blocks[0]['weight'] = 1000;
+            $blocks[0]['status'] = 1; //1 = Activado, 0 = Desactivado
+            //El primer parametro del arreglo es el numero del bloque
+            return $blocks;
+            break;
+        case 'view':
+            $block['subject'] = t('My first Block');
+            $blocks['content'] = t('Welcome to the drupal site');
+            return $blocks;
+    }
+}
+
+/**
+ * Implementation of hook_help
+ * La ruta ($PATH) en el cual donde me aparesca la ruta
+ */
+function first_example_help($path, $arg) {
+    switch ($path) {
+        case 'admin/build/block':
+            return '<p>'.t('This is the help from the module of First Example').'</p>';
+            break;
+
+        case 'user/%':
+            return '<p>'.t('This is the help for the users').'</p>';
+            break;
+    }
+}

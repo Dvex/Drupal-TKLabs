@@ -1,0 +1,79 @@
+<?php
+/*
+* Implementation of hook_block
+*/
+function example_users_block($op='list', $delta=0, $edit=array()){
+global $user, $base_path;
+	switch($op){
+  		case 'list':
+			$blocks[0]['info'] = t("User Data");
+			$blocks[0]['cache'] = BLOCK_NO_CACHE;
+			return $blocks;
+     
+ 		case 'view':
+			if($user->uid){ //Si el usuario esta registrado
+				$block['subject'] =  t('Your Account');
+				$block['content'] =  '<div class="example_users" >'; //Lo que contiene un bloque
+				$block['content'] =  l($user->name, 'user/'.$user->uid);
+				$block['content'] =  '</div>';
+				//$block['content'] =  '<div id="logout">'.l(t('Logout'), 'logout')·'</div>';
+
+				if($user->picture){
+				  $picture = $base_path.$user->picture;
+				  $block['content'].='<div class="example_users_image"><img src="'.$picture.'"</div>';
+				}
+				return $block;
+			}
+	}
+}
+
+function example_users_user($op, &$edit, &$user, $category=NULL){
+	switch($op){
+	 case 'register':
+		$form['example_users_fieldset']=array(
+		     '#title' => t('Personal Data'),
+		     '#type'=> 'fieldset',
+		     '#weigth' => 1
+		);
+		$form['example_users_fieldset']['nombre']=array(
+		     '#title' => t('Name'),
+		     '#type'=> 'textfield',
+		     '#default_value' => $user->example_users_name ? $user->example_users_name : '', //IF de una sola LINEA
+		     '#required'=> TRUE,
+		     '#weigth' => 1
+		);
+		$form['example_users_fieldset']['apellido']=array(
+		     '#title' => t('Last Name'),
+		     '#type'=> 'textfield',
+		     '#default_value' => $user->example_users_surname ? $user->example_users_surname : '',
+		     '#required'=> TRUE,
+		     '#weigth' => 1
+		);
+
+		return $form;
+
+	  case 'insert':
+		$user->data=array(
+		   'nombre' => $edit['example_users_name'],
+		   'apellido' => $edit['example_users_surname']
+		);
+		break;
+
+	  case 'login':
+		if(USER_ACCESS('Acceder a los datos personales')){
+			print('Accede a Todos');
+		}
+		break;
+	}
+}
+
+function example_users_profile_alter(&$account){
+unset($account->content['summary']);
+}
+
+function example_users_perm(){
+	return array(
+		'Acceder a los datos personales',
+		'Editar Page',	
+	);
+}

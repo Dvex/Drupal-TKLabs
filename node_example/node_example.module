@@ -1,0 +1,338 @@
+<?php
+
+/*
+ * Implementation of hook_node_info()
+ */
+
+function node_example_node_info() {
+    return array(
+      'Product' => array(
+          'name' => t('Product'),
+          'module' => 'node_example',
+          'description' => t('Example of how to use hook_node'),
+          'title_label' => t('Product Name'),
+          'body_label' => t('Description')
+      )  
+    );
+}
+
+/*
+ * Implementation of hook_form()
+ */
+
+function node_example_form(&$node, $form_state) {
+    $type = node_get_types('type', $node);
+    
+    if($type->has_title){
+        $form['title'] = array(
+            '#type' => 'textfield',
+            '#title' => check_plain($type->title_label),
+            '#required' => TRUE,
+            '#default_value' => $node->title,
+            '#maxlength' => 255,
+            '#weight' => -5
+        );
+    }
+    
+    if($type->has_body){
+         $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+         $form['body_field']['body']['#description'] = t('Enter the product description');
+         $form['body_field']['#weight'] = -4;
+    }
+    
+    $form['information'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Product Information'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#weight' => -3
+    );
+    
+    $form['information']['price'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Price'),
+        '#required' => TRUE,
+        '#default_value' => isset($node->price) ? $node->price : 0,
+        '#description' => t("Product's price (Soles)."),
+        '#weight' => 1,
+        '#size' => 20,
+        '#maxlength' => 35,
+        '#field_suffix' => 'S/.'
+    );
+    
+    $form['information']['weight'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Weight'),
+        '#default_value' => isset($node->weight) ? $node->weight : 0,
+        '#description' => t("Product's as weight (Kg)."),
+        '#weight' => 2,
+        '#size' => 10,
+        '#maxlength' => 15
+     );
+    
+    $form['information']['dimensions'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Dimensions'),
+        '#description' => t("Physical dimensions of the packaged product (cm)."),
+        '#weight' => 3
+    );
+    
+    $form['information']['dimensions']['length'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Length'),
+        '#default_value' => isset($node->length) ? $node->length : '',
+        '#weight' => 1,
+        '#size' => 10
+    );
+    
+    $form['information']['dimensions']['width'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Width'),
+        '#default_value' => isset($node->width) ? $node->width : '',
+        '#weight' => 2,
+        '#size' => 10
+    );
+    
+    $form['information']['dimensions']['height'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Height'),
+        '#default_value' => isset($node->height) ? $node->height : '',
+        '#weight' => 3,
+        '#size' => 10
+    );
+    
+    return $form;
+}
+
+/*
+ * Implementation of hook_validate().
+ */
+
+function node_example_validate($node, &$form) {
+    $pattern = '/^\d*(\.\d*)?$/';
+    if(!empty($node->price) && !is_numeric($node->price) && !preg_match($pattern, $node->price)){
+        form_set_error('price', t('Price must be in a valid number format. No commas and only one decimal point'));
+    }
+    
+    if(!empty($node->weight) && (!is_numeric($node->weight)) || $node->weight < 0){
+        form_set_error('weight', t('Weight must be a positive number.'));
+    }
+    
+    if(!empty($node->length) && (!is_numeric($node->length)) || $node->length < 0){
+        form_set_error('length', t('Length must be a positive number.'));
+    }
+    
+    if(!empty($node->width) && (!is_numeric($node->width)) || $node->width < 0){
+        form_set_error('width', t('Width must be a positive number.'));
+    }
+    
+    if(!empty($node->height) && (!is_numeric($node->height)) || $node->height < 0){
+        form_set_error('height', t('Height must be a positive number.'));
+    }
+}
+
+/*
+ * Implementation of hook_insert().
+ */
+function node_example_insert($node) {
+    $query = "INSERT INTO {node_example} (vid, sid, price, weight, length, width, height) VALUES (%d, %d, %d, %d, %d, %d, %d);";
+    db_query($query, $node->vid ,$node->sid, $node->price, $node->weight, $node->length, $node->width, $node->height);
+}
+
+/*
+ * Implementation of hook_update().
+ */
+function node_example_update($node) {
+    if($node->revision){
+        node_example_insert($node);
+    }else{
+        $query = "UPDATE {node_example} SET price = %d, weight = %d, length = %d, width = %d, height = %d WHERE vid = %d";
+        db_query($query,$node->vid, $node->price, $node->weight, $node->length, $node->width, $node->height);
+    }
+}
+
+/*
+ * Implementation of hook_delete().
+ */
+function node_example_delete($node) {
+    $query = "DELETE FROM {node_example} WHERE nid = %d";
+    db_query($query, $node->vid);
+}
+
+/*
+ * Implementation of hook_load().
+ */
+function node_example_load($node) {
+    $query = "SELECT price, weight, length, width, height FROM {node_example} WHERE vid = %d";
+    $additions = db_fetch_object(db_query($query, $node->vid));
+    return $additions;
+}
+
+/*
+ * Implementation of hook_view().
+ */
+function node_example_view($node, $teaser = FALSE, $page = FALSE) {
+    $node = node_prepare($node, $teaser);
+    $node->content['price'] = array(
+        '#value' => theme('node_example_price', $node->price),
+        '#weight' => 0
+    );
+    
+    if(!$teaser){
+        $node->content['body']['#value'] = theme('node_example_body', $node->body, $teaser, $page);
+        $node->content['body']['#weight'] = 1;
+    }else{
+        $node->content['body']['#value'] = theme('node_example_body', $node->body, $teaser, $page);
+    }
+    
+    return $node;
+}
+
+/*
+ * Implementation of hook_theme().
+ */
+function node_example_theme() {
+    return array(
+      'node_example_body' => array(
+          'arguments' => array('body' => '', 'teaser' => 0, 'page' => 0),
+      ),
+      
+      'node_example_price' => array(
+        'arguments' => array('price' => 0),  
+      ),
+    );
+}
+
+function theme_node_example_body($body, $teaser = 0, $page = 0) {
+    $output = '<div class="product-body">';
+    $output .= t('Description: ').$body;
+    $output .= '</div>';
+    return $output;
+}
+
+function theme_node_example_price($price) {
+    $output = '<div class="product-price">';
+    $output .= t('Price: '). $price . ' Soles';
+    $output .= '</div>';
+    return $output;
+}
+
+/*
+ * Implementation of hook_perm().
+ */
+
+function node_example_perm() {
+    return array(
+      'view products',
+      'create products',
+      'delete own products',
+      'delete any product',
+      'edit own products',
+      'edit any product'
+    );
+}
+
+/*
+ * Implementation of hook_access().
+ */
+
+function node_example_access($op, $node, $account) {
+    switch ($op) {
+        case 'view':
+            if($node->type == 'Product')
+                return user_access('view products', $account) ? TRUE : NULL;
+            
+        case 'create':
+            if($node->type == 'Product')
+                return user_access('create products', $account) ? TRUE : NULL;
+
+        case 'update':
+            if($node->type == 'Product')
+                return user_access('edit own products', $account) || (user_access('edit any product', $account)
+                    && ($account->uid == $node->uid)) ? TRUE : NULL;
+        
+        case 'delete':
+            if($node->type == 'Product')
+                return user_access('delete own products', $account) || (user_access('delete any product', $account)
+                    && ($account->uid == $node->uid)) ? TRUE : NULL;
+    }
+}
+
+/*
+ * Implementation of hook_node_grants().
+ */
+function node_example_node_grants($account,$op) {
+    if($op == 'view' && user_access('view products', $account)){
+        $grants['node_example'] = array(1);
+    }  elseif (($op == 'update' || $op == 'delete') && user_access('edit own products', $account)) {
+        $grants['node_example'] = array(2);
+    }  elseif ($op == 'create' && user_access('create product', $account)){
+        $grants['node_example'] = array(3);
+    }
+    
+    return $grants;
+}
+
+
+/*
+ * Implementation of hook_filter().
+ */
+
+function node_example_filter($op, $delta=0, $format=-1, $text='') {
+    if($op == 'list'){
+        return array(
+          0 => t('User replacement'),
+          1 => t('Current type')
+        );
+    }
+    
+    switch ($delta) {
+        case 0:
+            switch ($op) {
+                case 'description':
+                    return t('Replace a <username /> tag for the current name user');
+
+                case 'no cache':
+                    return TRUE;
+                    
+                case 'prepare':
+                    return preg_replace('!<username />!', '[username-item]', $text);
+                    
+                case 'process':
+                    return str_replace('[username-item]', '<em>'.variable_get("filter_example_username_$format", 'Anonymous').'</em>', $text);
+                    
+                case 'settings':
+                    $form['filter_example'] = array(
+                        '#type' => 'fieldset',
+                        '#title' => t('Username Filter'),
+                        '#collapsible' => TRUE,
+                        '#collapsed' => TRUE
+                    );
+                    
+                    $form['filter_example']["filter_example_username_$format"] = array(
+                        '#type' => 'textfield',
+                        '#title' => t('Subtituion of the string username'),
+                        '#default_value' => variable_get("filter_example_username_$format", 'Anonymous'),
+                        '#description' => t('The string to substitute for that you put everywhere in the text')
+                    );
+            }
+            
+            break;
+
+        case 1:
+            switch ($op) {
+                case 'description':
+                    return t('Inserts the current time in the place of a <timen /> tags');
+
+                case 'no cache':
+                    return TRUE;
+                    
+                case 'prepare':
+                    return preg_replace('!<time ?/>!', '[filter-example-time]', $text);
+                
+                case 'process':
+                    return str_replace('[filter-example-time]', '<em>'.format_date(time()).'</em>', $text);
+            }
+            break;
+    }
+}

@@ -1,0 +1,146 @@
+<?php
+/**
+* @file
+* This is my first module :D
+* Implementation of hook_menu()
+*/
+function example_menu_menu(){
+$items['exaMenu1'] = array(
+	'title' => 'This is a example URL',
+	'page callback' => 'example_menu_exaMenu',
+	'access callback' => TRUE,
+	'type' => MENU_CALLBACK
+);
+$items['exaMenu2/%/%'] = array(
+	'title' => 'This is a example URL with Arguments',
+	'page callback' => 'example_menu_pagina1',
+	'page arguments' => array(1,2),
+	'access callback' => TRUE,
+	'type' => MENU_CALLBACK
+);
+$items['urlConParametros'] = array(
+	'title' => 'This is a example URL with Arguments',
+	'page callback' => 'example_url_con_parametros',
+	'page arguments' => array('Eduardo','Cabrera'),
+	'access callback' => TRUE,
+	'type' => MENU_CALLBACK
+);
+$items['exaMenu3/%/%'] = array(
+	'title' => 'This is athoner example using numbers for operation',
+	'page callback' => 'example_menu_calculadora',
+	'page arguments' => array(1,2),
+	'access callback' => TRUE,
+	'type' => MENU_CALLBACK
+);
+$items['admin/settings/exaMenu4'] = array(
+	'title' => 'Elemento del menu en Configuracion del sitio',
+	'page callback' => 'example_menu_adminSite',
+	'access callback' => TRUE,
+	'type' => MENU_NORMAL_ITEM,
+	'weight' => 0
+);
+$items['exaMenu4'] = array(
+	'title' => 'Elemento de menu en Primary Links',
+	'page callback'=> 'example_menu_example_primary_links',
+	'access callback' => TRUE,
+	'type' => MENU_NORMAL_ITEM,
+	'menu_name' => 'primary-links',
+	'weight' => 0
+);
+$items['admin/settings/exaTabs'] = array(
+	'title' => 'My tabs in this page',
+	'description' => 'In this page show my tabs for future configuration',
+	'page callback' => 'example_menu_tabs',
+	'access callback' => TRUE,
+	'type' => MENU_NORMAL_ITEM,
+	'weight' => 0);
+$items['admin/settings/exaTabs/tab1'] = array(
+	'title' => 'My tab 1 in this page',
+	'page callback' => 'example_menu_tabs_1',
+	'access callback' => TRUE,
+	'type' => MENU_NORMAL_ITEM | MENU_DEFAULT_LOCAL_TASK,
+	'weight' => 0
+);
+$items['admin/settings/exaTabs/tab2'] = array(
+	'title' => 'My tab 2 in this page',
+	'page callback' => 'example_menu_tabs_2',
+	'access callback' => TRUE,
+	'type' => MENU_NORMAL_ITEM | MENU_LOCAL_TASK,
+	'weight' => 0
+);
+$items['admin/settings/exaTabs/tab3'] = array(
+	'title' => 'My tab 3 in this page',
+	'page callback' => 'example_menu_tabs_3',
+	'access callback' => TRUE,
+	'type' => MENU_NORMAL_ITEM | MENU_LOCAL_TASK,
+	'weight' => 0
+);
+return $items;
+}
+
+/**
+* Page's callback
+*/
+function example_menu_exaMenu(){
+$output = t('This is the example of my first module');
+return $output;
+}
+
+function example_menu_pagina1($nombre='', $apellido=''){
+//if($nombre != null && $apellido != null){
+$output = t('Welcome to my Module, @nombre @apellido!', array('@nombre' => $nombre, '@apellido' =>$apellido));
+/*}else{
+	$nombre = 'Eduardo';
+	$apellido = 'Cabrera';
+	$output = t('Welcome to my Module @nombre @apellido!', array('@nombre' => $nombre, '@apellido' => $apellido));
+}*/
+return $output;
+}
+
+function example_menu_calculadora($num1='', $num2=''){
+ if(is_numeric($num1) && is_numeric($num2)){
+	$suma = $num1 + $num2;
+	$resta = $num1 - $num2;
+	$division = $num1/$num2;
+	$multiplicacion = $num1*$num2;
+	$output = t('La suma entre @num1 y @num2 es @suma. La resta entre @num1 y @num2 es @resta. La division entre @num1 y @num2 es @division. La multiplicacion entre @num1 y @num2 es @multiplicacion', array('@num1' => $num1 , '@num2' => $num2, '@suma' => $suma, '@resta' => $resta, '@division' => $division, '@multiplicacion' => $multiplicacion));
+ }else{
+	$output = t('The follow numbers are invalid: @num1 and @num2', array('@num1' => $num1 , '@num2' => $num2));
+ }
+return $output;
+}
+
+function example_menu_adminSite(){
+$output = t('My Example Menu. In this page maybe stay the configuracion of my own module :D');
+return $output;
+}
+
+function example_menu_example_primary_links(){
+$output = t('My example menu in Primary Links =D');
+return $output;
+}
+
+function example_menu_tabs(){
+$output = t('My Example Menu. In this page maybe stay the configuracion of my own module :D');
+return $output;
+}
+
+function example_menu_tabs_1(){
+$output = t('My Example Menu. In this page stay my first TAB');
+return $output;
+}
+
+function example_menu_tabs_2(){
+$output = t('My Example Menu. In this page stay my second TAB');
+return $output;
+}
+
+function example_menu_tabs_3(){
+$output = t('My Example Menu. In this page stay my third TAB');
+return $output;
+}
+
+function example_url_con_parametros($nombre='', $apellido=''){
+$output = t('Welcome to my Module, @nombre @apellido!', array('@nombre' => $nombre, '@apellido' =>$apellido));
+return $output;
+}

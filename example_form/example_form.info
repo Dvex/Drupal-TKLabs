@@ -1,0 +1,8 @@
+; $Id$
+name ="Example"
+description ="modulo forms API"
+core = 6.x
+php = 5.1
+version = 1.0
+
+package = Tekton Labs

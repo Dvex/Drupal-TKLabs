@@ -1,0 +1,8 @@
+; $Id$
+name ="Example module for users"
+description ="Modulo hook user"
+core = 6.x
+php = 5.1
+version = 1.0
+
+package = Tekton Labs
