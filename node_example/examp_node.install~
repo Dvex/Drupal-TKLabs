@@ -1,0 +1,26 @@
+<?php
+
+/**
+*Implementacion de hook_install();
+*/
+
+function examp_node_install(){
+	drupal_install_schema('examp_node');
+}
+
+function examp_node_schema(){
+$schema['examp_node']= array(
+	'fields' => array(
+		'vid'=>array('type'=>'int', 'unsigned'=>'TRUE', 'default' => 0,'not null' => 'TRUE'),
+                'sid'=>array('type'=>'int', 'unsigned'=>'TRUE', 'default' => 0,'not null' => 'TRUE'),
+		//'price'=>array('type'=>'numeric', 'precision'=> 16, 'scale' => 2,'not null'=> 'TRUE'),
+		'weight'=>array('type'=>'float', 'default'=>'0', 'not null'=> 'TRUE'),
+		'length'=>array('type'=>'float', 'default'=>'0', 'not null'=> 'TRUE'),
+                'width'=>array('type'=>'float', 'default'=>'0', 'not null'=> 'TRUE'),
+		'height'=>array('type'=>'float', 'default'=>'0', 'not null'=> 'TRUE'),
+	),
+        'primary key'=> array('sid'),
+	'primary key'=> array('vid'),
+);
+return $schema;
+}

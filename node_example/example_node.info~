@@ -1,5 +1,5 @@
 ; $Id$
-name = "Node Example"
+name = "Example Node"
 description = "This is a example of hook node"
 core = 6.x
 php = 5.1
