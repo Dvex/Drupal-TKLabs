@@ -1,8 +1,0 @@
-; $Id$
-name = "Node Example"
-description = "This is a example of hook node"
-core = 6.x
-php = 5.1
-version = 1.0
-
-package = Tekton Labs
