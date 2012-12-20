@@ -1,0 +1,288 @@
+<?php
+
+/**
+ *   IMPLEMENTS HOOK_MENU
+ */
+function example_form_menu() {
+    $items = array();
+
+    $items['link_form'] = array(
+        'title' => t('Mi primer ejemplo'),
+        'page callback' => 'drupal_get_form', //Llamamos un formulario
+        'page arguments' => array('example_form_custom_form'), //argument for the drupal_get_form function
+        'access callback' => TRUE,
+        'description' => t('Este es el ejemplo para poder mostrar un formulario'),
+        'menu_name' => 'primary-links',
+        'type' => MENU_NORMAL_ITEM | MENU_CALLBACK
+    );
+
+    $items['link_form_2'] = array(
+        'title' => t('Mi segundo ejemplo'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('example_form_custom_form_two'), //argument for the drupal_get_form function
+        'access callback' => TRUE,
+        'description' => t('Este es el ejemplo para poder mostrar otro formulario'),
+        'menu_name' => 'primary-links',
+        'type' => MENU_NORMAL_ITEM | MENU_CALLBACK
+    );
+
+    return $items;
+}
+
+/**
+ * IMPLEMENTS HOOK_FORM
+ */
+function example_form_custom_form($form_state) {
+    $form = array();
+
+    $form['description'] = array(
+        '#type' => 'item',
+        '#title' => t('Este es un simple formulario para probar el HOOK_FORM')
+    );
+
+    $form['full_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Nombre Completo'),
+        '#required' => TRUE
+    );
+
+    $form['last_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Apellido Completo'),
+        '#required' => TRUE
+    );
+
+    $form['check'] = array(
+        '#type' => 'checkbox',
+        '#title' => 'Principal Opcion',
+        '#description' => t('Elige la opción.'),
+        '#required' => TRUE
+    );
+
+    $form['checks'] = array(
+        '#type' => 'checkboxes',
+        '#title' => 'Choose Option',
+        '#default_value' => array('a'),
+        '#options' => array(
+            'a' => 'Primera Opcion',
+            'b' => 'Segunda Opcion',
+            'c' => 'Tercera Opcion'
+        ),
+        '#description' => t('Elige cualquier opcion que quieras.'),
+        '#attributes' => array('class' => 'my-custom-form'),
+    );
+
+    // Fieldset containing a text field element
+    $form['fielset_element'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Dirección de su domicilio'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
+    // A text area inside a fieldset element
+    $form['fielset_element']['fielset_element_textfield'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Domicilio'),
+        '#description' => t('Aquí debes ingresar el domicilio.'),
+        '#required' => TRUE
+    );
+
+    $form['fielset_element']['fi_textfield'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Domicilio 2'),
+        '#description' => t('Aquí debes ingresar el domicilio 2.'),
+        '#required' => TRUE
+    );
+    
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'guardar',
+    );
+
+    $form['info'] = array(
+        '#value' => 'Mi primer formulario boni',
+    );
+
+    return $form;
+}
+
+/**
+ * IMPLEMENTS HOOK_FORM_VALIDATE
+ */
+function example_form_custom_form_validate($form, $form_state) {
+    
+    if (is_numeric($form_state['values']['full_name']))
+        drupal_set_message('El nombre contiene carácteres no permitidos', 'error');
+
+    if (is_numeric($form_state['values']['last_name']))
+        drupal_set_message('El apellido contiene carácteres no permitidos', 'error');
+
+    if (is_numeric($form_state['values']['fielset_element_textfield']))
+        drupal_set_message('El domicilio contiene carácteres no permitidos', 'error');
+//    if(is_numeric($form_state['values']['fielset_element']['fielset_element_textfield']))
+//        drupal_set_message('El domicilio esta incorrecto', 'warning');
+}
+
+/**
+ * IMPLEMENTS HOOK_FORM_SUBMIT
+ */
+function example_form_custom_form_submit($form, $form_state) {
+    $full_name = $form_state['values']['full_name'];
+    $last_name = $form_state['values']['last_name'];
+    $address = $form_state['values']['fielset_element_textfield'];
+    drupal_set_message('Los datos enviados son: ', 'status');
+    drupal_set_message("Nombre: " . $full_name, 'status');
+    drupal_set_message("Apellidos: " . $last_name, 'status');
+    drupal_set_message("Direccion: " . $address, 'status');
+}
+
+
+/*
+ * ANOTHER FORM MULTI-FORM
+ */
+
+
+function example_form_custom_form_two($form_state) {
+    $form = array();
+    // Muestra la pagina 2 si $form_state['storage']['page_two'] esta seteado
+    if (isset($form_state['storage']['page_two'])) {
+        return form_example_page_two();
+    }
+    
+    $form['description'] = array(
+        '#type' => 'item',
+        '#title' => t('A basic multistep form (page 1)'),
+    );
+
+    $form['name'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Name'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
+    $form['name']['first'] = array(
+        '#type' => 'textfield',
+        '#title' => t('First name'),
+        '#required' => TRUE,
+        '#default_value' => !empty($form_state['values']['first']) ? $form_state['values']['first'] : '', // changed
+        '#description' => "Please enter your first name.",
+        '#size' => 20,
+        '#maxlength' => 20,
+    );
+    $form['name']['last'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Last name'),
+        '#default_value' => !empty($form_state['values']['last']) ? $form_state['values']['last'] : '', // added
+    );
+    $form['year_of_birth'] = array(
+        '#type' => 'textfield',
+        '#title' => "Year of birth",
+        '#required' => TRUE,
+        '#description' => 'Format is "YYYY"',
+        '#default_value' => !empty($form_state['values']['year_of_birth']) ? $form_state['values']['year_of_birth'] : '', // added
+    );
+    
+    // Añadimos nuevos elementos al formulario actual
+    if (!empty($form_state['storage']['new_name'])) {
+        $form['name2'] = array(
+            '#type' => 'fieldset',
+            '#title' => t('Name #2'),
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
+        );
+        $form['name2']['first2'] = array(
+            '#type' => 'textfield',
+            '#title' => t('First name'),
+            '#description' => "Please enter your first name.",
+            '#size' => 20,
+            '#maxlength' => 20,
+            '#default_value' => !empty($form_state['values']['first2']) ? $form_state['values']['first2'] : '',
+        );
+        $form['name2']['last2'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Last name'),
+            '#default_value' => !empty($form_state['values']['last2']) ? $form_state['values']['last2'] : '',
+        );
+        $form['year_of_birth2'] = array(
+            '#type' => 'textfield',
+            '#title' => "Year of birth",
+            '#description' => 'Format is "YYYY"',
+            '#default_value' => !empty($form_state['values']['year_of_birth2']) ? $form_state['values']['year_of_birth2'] : '',
+        );
+    }
+    
+    $form['clear'] = array(
+        '#type' => 'submit',
+        '#value' => 'Limpiar formulario',
+        '#validate' => array('form_example_clear'),
+    );
+    
+    if (empty($form_state['storage']['new_name'])) {
+        $form['new_name'] = array(
+            '#type' => 'submit',
+            '#value' => 'Añadir otro nombre',
+            '#validate' => array('form_example_new_name'),
+        );
+    }
+    
+    $form['next'] = array(
+        '#type' => 'submit',
+        '#value' => 'Next >>',
+    );
+    return $form;
+}
+
+function form_example_page_two() {
+    $form = array();
+    
+    $form['description'] = array(
+        '#type' => 'item',
+        '#title' => t('A basic multistep form (page 2)'),
+    );
+
+    $form['color'] = array(
+        '#type' => 'textfield',
+        '#title' => 'Your favorite color',
+    );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Submit',
+    );
+    
+    return $form;
+}
+
+function form_example_new_name($form, &$form_state) {
+    $form_state['storage']['new_name'] = TRUE;
+    $form_state['rebuild'] = TRUE;
+}
+
+function form_example_clear($form, &$form_state) {
+    unset($form_state['values']);
+    unset($form_state['storage']);
+
+    $form_state['rebuild'] = TRUE;
+}
+
+function example_form_custom_form_two_submit($form, &$form_state) {
+    // Hace submit del primero y luego muestra el segundo.
+    if ($form_state['clicked_button']['#id'] == 'edit-next') {
+        $form_state['storage']['page_two'] = TRUE; // Seteamos en TRUE para mostrar la siguiente pagina
+        $form_state['storage']['page_one_values'] = $form_state['values']; // Salvamos los valores del primer formulario.
+    }
+    // Hacemos del siguiente formulario
+    else {
+        $page_one_values = $form_state['storage']['page_one_values'];
+        drupal_set_message(t('The form has been submitted. name="@first @last", year of birth=@year_of_birth', array('@first' => $page_one_values['first'], '@last' => $page_one_values['last'], '@year_of_birth' => $page_one_values['year_of_birth'])));
+
+        if (!empty($page_one_values['first'])) {
+            $first2 = isset($page_one_values['first2']) ? $page_one_values['first2'] : '';
+            $last2 = isset($page_one_values['last2']) ? $page_one_values['last2'] : '';
+            $year2 = isset($page_one_values['year_of_birth2']) ? $page_one_values['year_of_birth2'] : '';
+            drupal_set_message(t('Second name: name="@first @last", year of birth=@year_of_birth', array('@first' => $first2, '@last' => $last2, '@year_of_birth' => $year2)));
+        }
+        drupal_set_message(t('And the favorite color is @color', array('@color' => $form_state['values']['color'])));
+        unset($form_state['storage']);
+        $form_state['redirect'] = 'node'; // Redirects the user to /node.
+    }
+}
