@@ -1,4 +1,0 @@
-name = Example Form
-description = "Módulo que servirá como ejemplo el crear un formulario."
-core = 6.x
-version = "6.x-1.0"
