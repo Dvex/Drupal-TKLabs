@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * Implements HOOK_MENU
+ */
+
+function example_menu_menu() {
+    $items = array();
+    
+    $items['example_menu'] = array(
+        'title' => 'Mi primer menu en Drupal 7',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('display_first_form'),
+        'access callback' => TRUE,
+        'menu_name' => 'primary-links',
+        'type' => MENU_NORMAL_ITEM | MENU_CALLBACK
+    );
+    
+    return $items;
+}
+
+/**
+ * IMPLEMENTS HOOK_FORM
+ */
+
+function display_first_form() {
+    $form = array();
+    
+    $form['first_name'] = array(
+        '#type' => 'textfield',
+        '#title' => check_plain('First Name'),
+        '#required' => TRUE,
+        '#maslength' => 127,
+        '#weight' => -5
+    );
+    
+    $form['last_name'] = array(
+        '#type' => 'textfield',
+        '#title' => check_plain('Last Name'),
+        '#required' => TRUE,
+        '#maslength' => 127,
+        '#weight' => -4
+    );
+    
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Save'),
+        '#weight' => -3
+    );
+    
+    return $form;
+}
+
+/**
+ * IMPLEMENTS HOOK_FORM_SUBMIT
+ */
+
+function display_first_form_submit($form_id, &$form_state) {
+    $name = $form_state['values']['first_name'] . ' '. $form_state['values']['last_name'];
+    drupal_set_message("Mi primer formulario <br /> Los datos enviados son: $name", 'status');
+}
